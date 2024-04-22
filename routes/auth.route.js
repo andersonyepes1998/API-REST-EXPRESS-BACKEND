@@ -1,45 +1,25 @@
-import express from "express";
-import { login, register } from '../controllers/auth.controller.js';
-import { body } from 'express-validator'
-import { validationResulExpress } from "../middlewares/validationResulExpress.js";
+import { Router } from "express";
+import { 
+        infoUser, 
+        login, 
+        register, 
+        refreshToken, 
+        logout } from '../controllers/auth.controller.js';
+import { requireToken } from "../middlewares/requireToken.js";
+import { requireRefreshToken } from "../middlewares/requirerefreshToken.js";
+import { bodyLoginValidator, bodyRegisterValidator } from "../middlewares/validatorManager.js";
+
 //Este es un  middleware
-const router = express.Router();
+const router = Router();
 
-router.post(
-    '/register', 
-        [
-            body('email', 'Formato de Email incorrecto')
-                .trim()
-                .isEmail()
-                .normalizeEmail(),
-            body('password', 'Minimo de 56 Caracteres...')
-                .trim()
-                .isLength({ min: 6 }),
-            body('password', 'Formato de Password incorrecto')
-                .custom((value, {req}) => {
-                    if(value !== req.body.repassword){
-                        throw new Error('Las contraseñas no coinciden ')
-                    }
-                    return value;
-                })
-        ], 
-    validationResulExpress,
-    register
-);
+router.post( '/register', bodyRegisterValidator,register );
 
-router.post(
-    '/login', 
-        [
-            body('email', 'Formato de Email incorrecto')
-            .trim()
-            .isEmail()
-            .normalizeEmail(),
-        body('password', 'Minimo de 6 Caracteres...')
-            .trim()
-            .isLength({ min: 6 }),
-        ],
-    validationResulExpress,
-    login
-);
+router.post( '/login', bodyLoginValidator, login );
+
+router.get( '/protected', requireToken,infoUser );
+
+router.get( '/refresh', requireRefreshToken,refreshToken );
+
+router.get( '/logout', logout )
 
 export default router;
