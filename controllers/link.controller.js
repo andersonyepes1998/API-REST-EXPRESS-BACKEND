@@ -15,6 +15,24 @@ export const getLinks = async (req, res) => {
 
 export const getLinkId = async (req, res) => {
     try {
+        const {nanoLink} = req.params
+        const link = await Link.findOne({nanoLink});
+        console.log(link);
+
+        if(!link) return res.status(404).json({error: 'No existe el link'});
+
+        return res.json({ longLink: link.longLink });
+    } catch (error) {
+        console.log(error);
+        if(error.kind === 'ObjectId'){
+            return res.status(403).json({error: 'Formato de Id incorrecto'});
+        }
+        return res.status(500).json({error: 'Error del servidor' });
+    }
+}
+// PARA UN CRUD TRADICIONAL
+export const getLinkIdCrud = async (req, res) => {
+    try {
         const {id} = req.params
         const link = await Link.findById(id);
         console.log(link);
@@ -64,6 +82,39 @@ export const removeLinkId = async (req, res) => {
         if(!link.uid.equals(req.uid)) return res.status(404).json({error: 'No le pertenece ese ID 🧓'});
 
         await link.deleteOne();
+
+        return res.json({link});
+    } catch (error) {
+        console.log(error);
+        if(error.kind === 'ObjectId'){
+            return res.status(403).json({error: 'Formato de Id incorrecto'});
+        }
+        return res.status(500).json({error: 'Error del servidor' });
+    }
+}
+
+export const updateLink = async (req, res) => {
+    try {
+        const {id} = req.params
+        const {longLink} = req.body;
+
+        console.log(longLink);
+
+        if(!longLink.startsWith ('https://')){
+            longLink = 'https://' + longLink
+        }
+        
+        const link = await Link.findById(id);
+        console.log(link);
+
+        if(!link) return res.status(404).json({error: 'No existe el link'});
+
+        if(!link.uid.equals(req.uid)) return res.status(404).json({error: 'No le pertenece ese ID 🧓'});
+
+        // ACTUALIZAR
+
+        link.longLink = longLink;
+        await link.save();
 
         return res.json({link});
     } catch (error) {

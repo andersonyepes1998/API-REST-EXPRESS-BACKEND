@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { getLinks, getLinkId, createLinks, removeLinkId } from "../controllers/link.controller.js";
+import { 
+            getLinks, 
+            getLinkId, 
+            createLinks, 
+            removeLinkId, 
+            updateLink 
+        } 
+        from "../controllers/link.controller.js";
 import { requireToken } from "../middlewares/requireToken.js";
 import { bodyLinkValidator, paramLinkValidator } from "../middlewares/validatorManager.js";
 
@@ -12,8 +19,9 @@ const router = Router();
 // DELETE           /Links/:id      remove link
  
 router.get('/', requireToken, getLinks)
-router.get('/:id', requireToken, getLinkId)
+router.get('/:nanoLink', getLinkId)
 router.post('/', requireToken, bodyLinkValidator, createLinks)
+router.patch('/:id', requireToken, paramLinkValidator, bodyLinkValidator, updateLink)
 router.delete('/:id', requireToken, paramLinkValidator, removeLinkId)
 
 
